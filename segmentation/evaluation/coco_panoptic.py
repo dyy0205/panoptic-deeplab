@@ -17,6 +17,20 @@ from segmentation.utils import save_annotation
 logger = logging.getLogger(__name__)
 
 
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return str(obj, encoding='utf-8')
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
+
 class COCOPanopticEvaluator:
     """
     Evaluate panoptic segmentation
@@ -81,7 +95,6 @@ class COCOPanopticEvaluator:
                     'category_id': int(pred_class),
                 }
             )
-
         save_annotation(id2rgb(panoptic), self._panoptic_dir, image_filename, add_colormap=False)
         self._predictions.append(
             {
@@ -103,7 +116,7 @@ class COCOPanopticEvaluator:
             json_data = json.load(f)
         json_data["annotations"] = self._predictions
         with PathManager.open(self._predictions_json, "w") as f:
-            f.write(json.dumps(json_data))
+            f.write(json.dumps(json_data, cls=MyEncoder))
 
         pq_res = pq_compute(gt_json_file, pred_json_file, gt_folder, pred_folder)
 

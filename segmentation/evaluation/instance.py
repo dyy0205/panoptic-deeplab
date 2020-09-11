@@ -52,7 +52,6 @@ class CityscapesInstanceEvaluator:
                 png_filename = os.path.join(
                     self._mask_dir, image_filename + "_{}_{}.png".format(i, pred_class)
                 )
-
                 save_annotation(mask, self._mask_dir, image_filename + "_{}_{}".format(i, pred_class),
                                 add_colormap=False, scale_values=True)
                 fout.write("{} {} {}\n".format(os.path.join('mask', os.path.basename(png_filename)), pred_class, score))

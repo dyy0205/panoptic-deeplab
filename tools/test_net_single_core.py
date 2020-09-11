@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Testing code.
 # Example command:
-# python tools/test_net_single_core.py --cfg PATH_TO_CONFIG_FILE
+# python dyy_tools/test_net_single_core.py --cfg PATH_TO_CONFIG_FILE
 # Written by Bowen Cheng (bcheng9@illinois.edu)
 # ------------------------------------------------------------------------------
 
@@ -135,6 +135,13 @@ def main():
                 gt_dir=os.path.join(config.DATASET.ROOT, 'annotations',
                                     'instances_{}.json'.format(config.DATASET.TEST_SPLIT))
             )
+        elif 'ade' in config.DATASET.DATASET:
+            instance_metric = COCOInstanceEvaluator(
+                output_dir=os.path.join(config.OUTPUT_DIR, config.TEST.INSTANCE_FOLDER),
+                train_id_to_eval_id=data_loader.dataset.train_id_to_eval_id(),
+                gt_dir=os.path.join(config.DATASET.ROOT, 'annotations',
+                                    'instances_{}.json'.format(config.DATASET.TEST_SPLIT))
+            )
         else:
             raise ValueError('Undefined evaluator for dataset {}'.format(config.DATASET.DATASET))
 
@@ -159,6 +166,16 @@ def main():
                 split=config.DATASET.TEST_SPLIT,
                 num_classes=data_loader.dataset.num_classes
             )
+        elif 'ade' in config.DATASET.DATASET:
+            panoptic_metric = COCOPanopticEvaluator(
+                output_dir=os.path.join(config.OUTPUT_DIR, config.TEST.PANOPTIC_FOLDER),
+                train_id_to_eval_id=data_loader.dataset.train_id_to_eval_id(),
+                label_divisor=data_loader.dataset.label_divisor,
+                void_label=data_loader.dataset.label_divisor * data_loader.dataset.ignore_label,
+                gt_dir=config.DATASET.ROOT,
+                split=config.DATASET.TEST_SPLIT,
+                num_classes=data_loader.dataset.num_classes
+            )
         else:
             raise ValueError('Undefined evaluator for dataset {}'.format(config.DATASET.DATASET))
 
@@ -172,6 +189,7 @@ def main():
 
     image_filename_list = [
         os.path.splitext(os.path.basename(ann))[0] for ann in data_loader.dataset.ann_list]
+    image_id_list = list(range(len(image_filename_list)))
 
     # Debug output.
     if config.TEST.DEBUG:
@@ -324,14 +342,13 @@ def main():
                                                                center_hmp,
                                                                label_divisor=data_loader.dataset.label_divisor,
                                                                score_type=config.TEST.INSTANCE_SCORE_TYPE)
-                    instance_metric.update(instances, image_filename_list[i])
+                    instance_metric.update(instances, image_id_list[i])
 
                 # Optional: evaluates panoptic segmentation.
                 if panoptic_metric is not None:
-                    image_id = '_'.join(image_filename_list[i].split('_')[:3])
                     panoptic_metric.update(panoptic_pred,
                                            image_filename=image_filename_list[i],
-                                           image_id=image_id)
+                                           image_id=image_id_list[i])
 
                 # Optional: evaluates foreground segmentation.
                 if foreground_metric is not None:

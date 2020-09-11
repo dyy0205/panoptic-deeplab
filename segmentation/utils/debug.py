@@ -68,6 +68,10 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
         (num_outputs * map_height, batch_size * map_width, 3), dtype=np.uint8
     )
 
+    semantic_compare = np.zeros(
+        (3 * map_height, batch_size * map_width, 3), dtype=np.uint8
+    )
+
     semantic_pred = torch.argmax(batch_outputs['semantic'].detach(), dim=1)
     if 'foreground' in batch_outputs:
         foreground_pred = torch.argmax(batch_outputs['foreground'].detach(), dim=1)
@@ -81,12 +85,14 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
         # save images
         image = dataset.reverse_transform(batch_images[i])
         grid_image[:, width_begin:width_end, :] = image
+        semantic_compare[:map_height, width_begin:width_end, :] = image
 
         if 'semantic' in target_keys:
             # save gt semantic
             gt_sem = batch_targets['semantic'][i].cpu().numpy()
             gt_sem = label_to_color_image(gt_sem, dataset.create_label_colormap())
             grid_target[:map_height, width_begin:width_end, :] = gt_sem
+            semantic_compare[map_height:2 * map_height, width_begin:width_end, :] = gt_sem
 
         if 'center' in target_keys:
             # save gt center
@@ -134,6 +140,7 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
             pred_sem = semantic_pred[i].cpu().numpy()
             pred_sem = label_to_color_image(pred_sem, dataset.create_label_colormap())
             grid_output[:map_height, width_begin:width_end, :] = pred_sem
+            semantic_compare[2 * map_height:3 * map_height, width_begin:width_end, :] = pred_sem
 
         if 'center' in output_keys:
             # save pred center
@@ -167,6 +174,9 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
             pil_image = img.fromarray(grid_output.astype(dtype=np.uint8))
             with open('%s/%s_%d.png' % (out_dir, 'debug_batch_outputs', iteration), mode='wb') as f:
                 pil_image.save(f, 'PNG')
+            pil_image = img.fromarray(semantic_compare.astype(dtype=np.uint8))
+            with open('%s/%s_%d.png' % (out_dir, 'semantic_compare', iteration), mode='wb') as f:
+                pil_image.save(f, 'PNG')
         else:
             pil_image = img.fromarray(grid_image.astype(dtype=np.uint8))
             with open('%s/%s_%d.png' % (out_dir, 'debug_test_images', iteration), mode='wb') as f:
@@ -187,6 +197,8 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
                 os.remove('%s/%s_%d.png' % (out_dir, 'debug_batch_targets', iteration_to_remove))
             if os.path.exists('%s/%s_%d.png' % (out_dir, 'debug_batch_outputs', iteration_to_remove)):
                 os.remove('%s/%s_%d.png' % (out_dir, 'debug_batch_outputs', iteration_to_remove))
+            if os.path.exists('%s/%s_%d.png' % (out_dir, 'semantic_compare', iteration_to_remove)):
+                os.remove('%s/%s_%d.png' % (out_dir, 'semantic_compare', iteration_to_remove))
             # 0 is a special iter
             if os.path.exists('%s/%s_%d.png' % (out_dir, 'debug_batch_images', 0)):
                 os.remove('%s/%s_%d.png' % (out_dir, 'debug_batch_images', 0))
@@ -194,3 +206,5 @@ def save_debug_images(dataset, batch_images, batch_targets, batch_outputs, out_d
                 os.remove('%s/%s_%d.png' % (out_dir, 'debug_batch_targets', 0))
             if os.path.exists('%s/%s_%d.png' % (out_dir, 'debug_batch_outputs', 0)):
                 os.remove('%s/%s_%d.png' % (out_dir, 'debug_batch_outputs', 0))
+            if os.path.exists('%s/%s_%d.png' % (out_dir, 'semantic_compare', 0)):
+                os.remove('%s/%s_%d.png' % (out_dir, 'semantic_compare', 0))

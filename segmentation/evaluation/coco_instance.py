@@ -16,6 +16,20 @@ from fvcore.common.file_io import PathManager
 import pycocotools.mask as mask_util
 
 
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, bytes):
+            return str(obj, encoding='utf-8')
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
+
 class COCOInstanceEvaluator:
     """
     Evaluate COCO instance segmentation
@@ -42,8 +56,8 @@ class COCOInstanceEvaluator:
 
         self._gt_dir = gt_dir
 
-    def update(self, instances, image_filename=None):
-        if image_filename is None:
+    def update(self, instances, image_id=None):
+        if image_id is None:
             raise ValueError('Need to provide image_filename.')
         num_instances = len(instances)
 
@@ -51,7 +65,6 @@ class COCOInstanceEvaluator:
             pred_class = instances[i]['pred_class']
             if self._train_id_to_eval_id is not None:
                 pred_class = self._train_id_to_eval_id[pred_class]
-            image_id = int(os.path.basename(image_filename).split('.')[0])
             score = instances[i]['score']
             mask = instances[i]['pred_mask'].astype("uint8")
             # use RLE to encode the masks, because they are too large and takes memory
@@ -65,8 +78,8 @@ class COCOInstanceEvaluator:
 
             self._predictions.append(
                 {
-                    'image_id': image_id,
-                    'category_id': pred_class,
+                    'image_id': int(image_id),
+                    'category_id': int(pred_class),
                     'segmentation': mask_rle,
                     'score': float(score)
                 }
@@ -96,7 +109,7 @@ class COCOInstanceEvaluator:
             c.pop("bbox", None)
 
         with PathManager.open(self._predictions_json, "w") as f:
-            f.write(json.dumps(coco_results))
+            f.write(json.dumps(coco_results, cls=MyEncoder))
 
         coco_dt = coco_gt.loadRes(coco_results)
         coco_eval = COCOeval(coco_gt, coco_dt, 'segm')

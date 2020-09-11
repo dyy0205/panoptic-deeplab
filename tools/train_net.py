@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Training code.
 # Example command:
-# python -m torch.distributed.launch --nproc_per_node=4 tools/train_net.py --cfg PATH_TO_CONFIG_FILE
+# python -m torch.distributed.launch --nproc_per_node=4 dyy_tools/train_net.py --cfg PATH_TO_CONFIG_FILE
 # Written by Bowen Cheng (bcheng9@illinois.edu)
 # ------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ def main():
 
     # build model
     model = build_segmentation_model_from_cfg(config)
-    logger.info("Model:\n{}".format(model))
+    # logger.info("Model:\n{}".format(model))
 
     logger.info("Rank of current process: {}. World size: {}".format(comm.get_rank(), comm.get_world_size()))
 
@@ -103,7 +103,7 @@ def main():
         model_weights = torch.load(config.MODEL.WEIGHTS)
         get_module(model, distributed).load_state_dict(model_weights, strict=False)
         logger.info('Pre-trained model from {}'.format(config.MODEL.WEIGHTS))
-    elif not config.MODEL.BACKBONE.PRETRAINED:
+    elif config.MODEL.BACKBONE.PRETRAINED:
         if os.path.isfile(config.MODEL.BACKBONE.WEIGHTS):
             pretrained_weights = torch.load(config.MODEL.BACKBONE.WEIGHTS)
             get_module(model, distributed).backbone.load_state_dict(pretrained_weights, strict=False)

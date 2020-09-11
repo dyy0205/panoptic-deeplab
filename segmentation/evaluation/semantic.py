@@ -68,8 +68,8 @@ class SemanticEvaluator:
                 pred = self._convert_train_id_to_eval_id(pred, self._train_id_to_eval_id)
             if image_filename is None:
                 raise ValueError('Need to provide filename to save.')
-            save_annotation(
-                pred, self._output_dir, image_filename, add_colormap=False)
+
+            save_annotation(pred, self._output_dir, image_filename, add_colormap=False)
 
     def evaluate(self):
         """

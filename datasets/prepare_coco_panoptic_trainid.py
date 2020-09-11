@@ -43,10 +43,17 @@ def convert_to_trainid(input_filename, output_filename):
 
 
 if __name__ == "__main__":
-    dataset_dir = os.path.join(os.path.dirname(__file__), 'coco', 'annotations')
-    for s in ['panoptic_train2017', 'panoptic_val2017']:
+    # dataset_dir = os.path.join(os.path.dirname(__file__), 'coco', 'annotations')
+    # for s in ['panoptic_train2017', 'panoptic_val2017']:
+    #     print("Start converting {} to trainid.".format(s))
+    #     convert_to_trainid(
+    #         os.path.join(dataset_dir, "{}.json".format(s)),
+    #         os.path.join(dataset_dir, "{}_trainId.json".format(s)),
+    #     )
+    dataset_dir = '/Users/dyy/Desktop/ADE20k/2channels/annotations'
+    for s in ['train', 'val']:
         print("Start converting {} to trainid.".format(s))
         convert_to_trainid(
-            os.path.join(dataset_dir, "{}.json".format(s)),
-            os.path.join(dataset_dir, "{}_trainId.json".format(s)),
+            os.path.join(dataset_dir, "ADE_indoor_{}.json".format(s)),
+            os.path.join(dataset_dir, "ADE_indoor_{}_panoptic.json".format(s)),
         )

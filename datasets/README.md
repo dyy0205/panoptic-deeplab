@@ -48,7 +48,7 @@ coco/
 Install panopticapi by:
 ```
 pip install git+https://github.com/cocodataset/panopticapi.git
-```
+``` 
 
 Note:
 - panoptic_{train,val}2017_trainId.json are created by `python prepare_coco_panoptic_trainid.py`.  

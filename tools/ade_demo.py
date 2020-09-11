@@ -51,7 +51,7 @@ def parse_args():
                         type=str)
     parser.add_argument('--extension',
                         help='file extension if input is image list',
-                        default='.png',
+                        default='.jpg',
                         type=str)
     parser.add_argument('--merge-image',
                         help='merge image with predictions',
@@ -92,9 +92,9 @@ def read_image(file_name, format=None):
     return image
 
 
-class CityscapesMeta(object):
+class ADEMeta(object):
     def __init__(self):
-        self.thing_list = [11, 12, 13, 14, 15, 16, 17, 18]
+        self.thing_list = list(range(21))
         self.label_divisor = 1000
         self.ignore_label = 255
 
@@ -105,25 +105,27 @@ class CityscapesMeta(object):
             A colormap for visualizing segmentation results.
         """
         colormap = np.zeros((256, 3), dtype=np.uint8)
-        colormap[0] = [128, 64, 128]
-        colormap[1] = [244, 35, 232]
-        colormap[2] = [70, 70, 70]
-        colormap[3] = [102, 102, 156]
-        colormap[4] = [190, 153, 153]
-        colormap[5] = [153, 153, 153]
-        colormap[6] = [250, 170, 30]
-        colormap[7] = [220, 220, 0]
-        colormap[8] = [107, 142, 35]
-        colormap[9] = [152, 251, 152]
-        colormap[10] = [70, 130, 180]
-        colormap[11] = [220, 20, 60]
-        colormap[12] = [255, 0, 0]
-        colormap[13] = [0, 0, 142]
-        colormap[14] = [0, 0, 70]
-        colormap[15] = [0, 60, 100]
-        colormap[16] = [0, 80, 100]
-        colormap[17] = [0, 0, 230]
-        colormap[18] = [119, 11, 32]
+        colormap[0] = [128, 0, 0]
+        colormap[1] = [128, 128, 0]
+        colormap[2] = [0, 0, 210]
+        colormap[3] = [125, 125, 125]
+        colormap[4] = [64, 0, 0]
+        colormap[5] = [64, 128, 0]
+        colormap[6] = [64, 0, 128]
+        colormap[7] = [192, 0, 128]
+        colormap[8] = [114, 128, 128]
+        colormap[9] = [192, 128, 128]
+        colormap[10] = [128, 64, 0]
+        colormap[11] = [0, 128, 0]
+        colormap[12] = [0, 0, 128]
+        colormap[13] = [255, 128, 100]
+        colormap[14] = [192, 0, 0]
+        colormap[15] = [192, 128, 0]
+        colormap[16] = [0, 64, 0]
+        colormap[17] = [0, 192, 0]
+        colormap[18] = [0, 128, 255]
+        colormap[19] = [100, 192, 0]
+        colormap[20] = [0, 255, 0]
         return colormap
 
 
@@ -169,8 +171,8 @@ def main():
     except:
         logger.warning(
             "Cannot build data loader, using default meta data. This will disable visualizing intermediate outputs")
-        if 'cityscapes' in config.DATASET.DATASET:
-            meta_dataset = CityscapesMeta()
+        if 'ade' in config.DATASET.DATASET:
+            meta_dataset = ADEMeta()
         else:
             raise ValueError("Unsupported dataset: {}".format(config.DATASET.DATASET))
         save_intermediate_outputs = False
